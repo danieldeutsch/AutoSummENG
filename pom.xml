@@ -47,6 +47,12 @@
                                 <mainClass>gr.demokritos.iit.npower.NPowER</mainClass>
                             </configuration>
                         </execution>
+                        <execution>
+                            <id>NPowERBatch</id>
+                            <configuration>
+                                <mainClass>gr.demokritos.iit.npower.NPowERBatch</mainClass>
+                            </configuration>
+                        </execution>
                     </executions>
                 </plugin>
             </plugins>
