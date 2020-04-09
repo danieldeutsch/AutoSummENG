@@ -10,7 +10,10 @@ import gr.demokritos.iit.jinsect.documentModel.representations.DocumentNGramGrap
 import gr.demokritos.iit.jinsect.documentModel.representations.DocumentNGramSymWinGraph;
 import gr.demokritos.iit.jinsect.structs.GraphSimilarity;
 import gr.demokritos.iit.jinsect.utils;
+
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
@@ -21,7 +24,7 @@ import java.util.*;
 public class NPowERBatch {
 
     public static void printSyntax() {
-        System.out.println("Syntax: NPowER \"-files=files.tsv\" "
+        System.out.println("Syntax: NPowER \"-files=files.tsv\" -output=\"output.tsv\""
                 + "[-minN=3] [-maxN=3] [-dwin=3]"
                 + " [-minScore=0.0] [-maxScore=1.0]");
 
@@ -35,6 +38,7 @@ public class NPowERBatch {
         Hashtable hSwitches = utils.parseCommandLineSwitches(args);
 
         String filesTsv = utils.getSwitch(hSwitches, "files", "").trim();
+        String outputTsv = utils.getSwitch(hSwitches, "output", "").trim();
         Integer iMinN = Integer.valueOf(utils.getSwitch(hSwitches, "minN",
                 "3").trim());
         Integer iMaxN = Integer.valueOf(utils.getSwitch(hSwitches, "maxN",
@@ -51,12 +55,15 @@ public class NPowERBatch {
                         + "MinScore: %4.2f, MaxScore: %4.2f\n", iMinN, iMaxN, iDWin,
                 dMinScore, dMaxScore));
 
-        if (filesTsv.length() == 0) {
+        if (filesTsv.length() == 0 || outputTsv.length() == 0) {
             printSyntax();
             return;
         }
 
-        int clusterCounter = 0;
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputTsv));
+        writer.write("Model\tPeer\tAutoSummENG\tMeMoG\tNPowER\n");
+
+        int modelCounter = 0;
         Scanner scanner = new Scanner(new File(filesTsv));
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
@@ -79,6 +86,7 @@ public class NPowERBatch {
             List<String> lModelFiles = new ArrayList<String>();
 
             // For every model
+            System.out.println("Loading models " + modelCounter);
             double dMergeCnt = 0.0;
             for (String sCurModel : sModels) {
                 File fCurModel = new File(sCurModel);
@@ -112,6 +120,7 @@ public class NPowERBatch {
                 }
             }
 
+            System.out.println("Processing peers");
             int peerCounter = 0;
             for (String sPeer : sPeers) {
                 // Load peer text graph
@@ -151,13 +160,14 @@ public class NPowERBatch {
                 double dNPowER = (5.2905 * dAutoSummENG + 3.0053 * dMeMoG + 0.5866) / 10;
                 dNPowER = dMinScore + (dMaxScore - dMinScore) * dNPowER;
 
-                System.out.println(String.format("%d\t%d\t%8.6f\t%8.6f\t%8.6f", clusterCounter, peerCounter, dAutoSummENG,
+                writer.write(String.format("%d\t%d\t%8.6f\t%8.6f\t%8.6f\n", modelCounter, peerCounter, dAutoSummENG,
                         dMeMoG, dNPowER));
 
                 peerCounter++;
             }
 
-            clusterCounter++;
+            modelCounter++;
         }
+        writer.close();
     }
 }

@@ -1,1 +1,1 @@
-mvn exec:java@NPowERBatch -Dexec.args='-files=data/files.tsv'
+mvn exec:java@NPowERBatch -Dexec.args='-files=data/files.tsv -output=output.tsv'
